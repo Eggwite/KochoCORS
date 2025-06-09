@@ -11,7 +11,6 @@ Get started in seconds! Deploy KochoCORS to your favorite platform with a single
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Eggwite/KochoCORS/)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Eggwite/KochoCORS/)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Eggwite/KochoCORS/)
 
 ## Quick Start & Usage
 
@@ -133,7 +132,7 @@ go build -o proxy.exe . # Or: go build -o proxy .
 
 ## Platform-Specific Deployment Notes & Docker Hub
 
-When deploying, refer to the platform-specific configuration files in the root of this repository (`render.yaml`, `Dockerfile`, `vercel.json`, `Procfile`).
+When deploying, refer to the platform-specific configuration files in the root of this repository (`render.yaml`, `Dockerfile`, `Procfile`).
 
 #### Render (`render.yaml`)
 *   **Plan**: Defaults to `free`. Modify `plan: free` as needed.
@@ -144,10 +143,6 @@ When deploying, refer to the platform-specific configuration files in the root o
 #### Heroku (`Procfile`)
 *   The Go buildpack compiles `main.go`. `web: proxy` (or `./proxy`) runs the executable.
 *   Heroku sets the `PORT` environment variable. Configure others via the dashboard/CLI.
-
-#### Vercel (`vercel.json`)
-*   Uses `@vercel/go` builder. Vercel handles routing and sets the `PORT`.
-*   Configure other environment variables in the Vercel project settings.
 
 #### Docker (`Dockerfile` details)
 *   Provides a multi-stage build for a small, optimized Linux image.
