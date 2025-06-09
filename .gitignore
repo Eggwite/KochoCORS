@@ -1,0 +1,20 @@
+# Environment files
+.env
+.env.*
+*.env
+
+# Allow example environment file (template)
+!.env.example
+
+# Backup environment files
+.env.backup
+.env.local
+.env.production
+.env.staging
+
+# Common environment file patterns
+env
+env.*
+
+# Build artifacts
+*.exe
