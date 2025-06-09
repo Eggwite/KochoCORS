@@ -1,12 +1,13 @@
-# HTTP Proxy Server with Dynamic CORS Detection
+# KochoCORS
 
 A powerful, configurable HTTP proxy server written in Go with intelligent CORS origin detection, authentication, rate limiting, and comprehensive security features.
 
-## 🚨 **Default Configuration: Intentionally Vulnerable/Permissive**
+## Default Configuration: Intentionally Vulnerable/Permissive
 
-**⚠️ WARNING: This proxy server is configured with permissive defaults for development ease. See the [full documentation](./docs/README.md) for production security guidance.**
+> **⚠️ Warning**  
+> The default configuration is designed for development and testing purposes and is intentionally permissive. It is **not recommended for production environments** due to potential security vulnerabilities.
 
-## 🚀 **Quick Start**
+## Quick Start
 
 ### Basic Usage (Development Mode)
 ```bash
@@ -29,7 +30,7 @@ go run main.go -auth-key=secret123 -allowed-domains=api.example.com
 go run main.go -auth-key=prod-key -rate-limit=60 -allowed-domains=myapi.com
 ```
 
-## 🌐 **Making Requests**
+## Making Requests
 
 ```bash
 # Basic proxy request (no auth required by default)
@@ -42,7 +43,7 @@ curl "http://localhost:3000/proxy?url=https://api.example.com/data&key=secret123
 curl "http://localhost:3000/ping"
 ```
 
-## ⚙️ **Configuration Flags**
+## Configuration Flags
 
 | Flag | Description | Default |
 |------|-------------|---------|
@@ -54,7 +55,7 @@ curl "http://localhost:3000/ping"
 | `-default-origin` | Default CORS origin | `"*"` |
 | `-insecure-tls` | Skip TLS certificate verification | `false` |
 
-## 🔧 **Build and Run**
+## Build and Run
 
 ```bash
 # Install dependencies
@@ -67,36 +68,40 @@ go build -o proxy.exe
 ./proxy.exe -debug -port=8080
 ```
 
-## 📚 **Full Documentation**
+## Full Documentation
 
 For comprehensive documentation including:
-- **Dynamic CORS origin detection details**
-- **Security features and best practices**
-- **Production deployment guidance**
-- **Troubleshooting and debugging**
-- **API reference and examples**
+- Dynamic CORS origin detection details
+- Security features and best practices
+- Production deployment guidance
+- Troubleshooting and debugging
+- API reference and examples
 
-**👉 [See Complete Documentation](./docs/README.md)**
+[See Complete Documentation](./docs/README.md)
 
-## ✨ **Key Features**
+## Key Features
 
-- ✅ **Dynamic CORS Origin Detection** - Intelligently detects appropriate CORS origins
-- ✅ **Authentication Support** - Optional API key authentication
-- ✅ **Rate Limiting** - Configurable request rate limiting
-- ✅ **Domain Whitelisting** - Restrict proxy targets to specific domains
-- ✅ **Header Forwarding** - Forwards ALL headers (except problematic ones)
-- ✅ **TLS Support** - Full HTTPS support with optional cert validation bypass
-- ✅ **Debug Logging** - Comprehensive logging for troubleshooting
-- ✅ **Thread-Safe** - Handles concurrent requests safely
+- Dynamic CORS Origin Detection - Intelligently detects appropriate CORS origins
+- Authentication Support - Optional API key authentication
+- Rate Limiting - Configurable request rate limiting
+- Domain Whitelisting - Restrict proxy targets to specific domains
+- Header Forwarding - Forwards ALL headers (except problematic ones)
+- TLS Support - Full HTTPS support with optional cert validation bypass
+- Debug Logging - Comprehensive logging for troubleshooting
+- Thread-Safe - Handles concurrent requests safely
 
-## 🛡️ **What This Proxy Does**
+## What This Proxy Does
 
-- **✅ Custom Header Forwarding**: Forwards ALL incoming headers except 'host' and 'access-control-*'
-- **✅ Concurrent Requests**: Thread-safe handling of multiple simultaneous requests
-- **✅ Dynamic CORS**: Intelligent origin detection based on request headers
-- **❌ IP Forwarding**: Does NOT preserve original client IP
-- **❌ Redirect Following**: Does NOT automatically follow redirects
+- Custom Header Forwarding: Forwards ALL incoming headers except 'host' and 'access-control-*'
+- Concurrent Requests: Thread-safe handling of multiple simultaneous requests
+- Dynamic CORS: Intelligent origin detection based on request headers
+- IP Forwarding: Does NOT preserve original client IP
+- Redirect Following: Does NOT automatically follow redirects
 
 ---
+## **License**
 
-**For detailed security considerations, production deployment, and advanced configuration, see the [complete documentation](./docs/README.md).**
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+---
+**Note**: Always secure your configuration for production environments.
