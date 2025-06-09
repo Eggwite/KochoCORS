@@ -17,17 +17,18 @@
 
 ### Supported Features:
 - **Dynamic CORS Detection**: Automatically detects and sets appropriate CORS origins.
-- **Authentication**: Optional authentication via query parameters.
+- **Authentication**: Optional authentication via the `X-KochoCORS-Auth-Token` header.
 - **Rate Limiting**: Configurable request limits per minute.
 - **Domain Whitelisting**: Restricts proxy access to specified domains.
 - **TLS Support**: Includes HTTPS support with optional certificate validation bypass.
 - **Debug Logging**: Provides detailed logs for troubleshooting.
 - **Concurrent Request Handling**: Fully thread-safe with support for multiple simultaneous requests.
+- **Configurable Redirect Following**: Choose whether the proxy should follow HTTP redirects from the target server or return them to the client.
 
 ### Limitations:
 > **⚠️ Note**  
 > - **IP Forwarding**: Does not preserve or forward the original client IP.  
-> - **Redirect Handling**: Does not automatically follow redirects; returns redirect responses as-is.
+> - **Redirect Handling**: By default, follows redirects. Can be configured to return redirect responses as-is.
 
 ## **Getting Started**
 
@@ -64,6 +65,7 @@ go run main.go -auth-key=prod-secret -rate-limit=60 -allowed-domains=myapi.com
 | `-allowed-domains`| Comma-separated allowed domains   | `""`          | `-allowed-domains=api.com,app.com` |
 | `-default-origin` | Default CORS origin               | `"*"`         | `-default-origin=https://myapp.com` |
 | `-insecure-tls`   | Skip TLS certificate validation   | `false`       | `-insecure-tls`                 |
+| `-follow-redirects` | Follow HTTP redirects from target | `true`        | `-follow-redirects=false`       |
 
 ### Environment Variables
 ```bash
@@ -75,6 +77,7 @@ export RATE_LIMIT=60
 export ALLOWED_DOMAINS=api.example.com,example.com
 export DEFAULT_ORIGIN=https://myapp.com
 export INSECURE_TLS=true
+export FOLLOW_REDIRECTS=false
 ```
 
 ### .env File Support
@@ -87,6 +90,7 @@ RATE_LIMIT=60
 ALLOWED_DOMAINS=api.example.com,example.com
 DEFAULT_ORIGIN=https://myapp.com
 INSECURE_TLS=false
+FOLLOW_REDIRECTS=true
 ```
 
 **Configuration Precedence**:
@@ -106,23 +110,23 @@ curl "http://localhost:3000/proxy?url=https://api.github.com/users/octocat"
 
 #### Authenticated Request
 ```bash
-curl "http://localhost:3000/proxy?url=https://api.example.com/data&key=secret123"
+curl -H "X-KochoCORS-Auth-Token: secret123" "http://localhost:3000/proxy?url=https://api.example.com/data"
 ```
 
 #### POST Request with Payload
 ```bash
 curl -X POST \
-    "http://localhost:3000/proxy?url=https://api.example.com/users&key=secret123" \
-    -H "Content-Type: application/json" \
+    -H "X-KochoCORS-Auth-Token: secret123" \
+    "http://localhost:3000/proxy?url=https://api.example.com/users" \
     -d '{"name": "John Doe"}'
 ```
 
 #### JavaScript Example
 ```javascript
-fetch('http://localhost:3000/proxy?url=https://api.example.com/data&key=secret123', {
+fetch('http://localhost:3000/proxy?url=https://api.example.com/data', {
     method: 'GET',
     headers: {
-        'Content-Type': 'application/json'
+        'X-KochoCORS-Auth-Token': 'secret123'
     }
 })
 .then(response => response.json())
@@ -215,7 +219,6 @@ go run main.go \
 > - Specify a secure CORS origin (`-default-origin`).  
 > - Enable TLS certificate validation (remove `-insecure-tls`).  
 > - Deploy behind a reverse proxy (e.g., nginx, caddy).  
-> - Monitor logs for suspicious activity.
 
 ## **Troubleshooting**
 

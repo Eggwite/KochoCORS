@@ -19,23 +19,25 @@ import (
 )
 
 type Config struct {
-	AllowedDomains []string
-	RateLimit      int
-	Port           string
-	AuthKey        string
-	Debug          bool
-	InsecureTLS    bool
-	DefaultOrigin  string
+	AllowedDomains  []string
+	RateLimit       int
+	Port            string
+	AuthKey         string
+	Debug           bool
+	InsecureTLS     bool
+	DefaultOrigin   string
+	FollowRedirects bool
 }
 
 var (
-	flagPort           = flag.String("port", "", "port to listen on")
-	flagDebug          = flag.Bool("debug", false, "enable debug logging")
-	flagInsecureTLS    = flag.Bool("insecure-tls", false, "skip TLS certificate verification")
-	flagDefaultOrigin  = flag.String("default-origin", "*", "default origin for CORS")
-	flagAuthKey        = flag.String("auth-key", "", "authentication key required for proxy requests")
-	flagRateLimit      = flag.Int("rate-limit", 0, "rate limit per minute (0 to disable)")
-	flagAllowedDomains = flag.String("allowed-domains", "", "comma-separated list of allowed domains")
+	flagPort            = flag.String("port", "", "port to listen on")
+	flagDebug           = flag.Bool("debug", false, "enable debug logging")
+	flagInsecureTLS     = flag.Bool("insecure-tls", false, "skip TLS certificate verification")
+	flagDefaultOrigin   = flag.String("default-origin", "*", "default origin for CORS")
+	flagAuthKey         = flag.String("auth-key", "", "authentication key required for proxy requests, passed via X-KochoCORS-Auth-Token header")
+	flagRateLimit       = flag.Int("rate-limit", 0, "rate limit per minute (0 to disable)")
+	flagAllowedDomains  = flag.String("allowed-domains", "", "comma-separated list of allowed domains")
+	flagFollowRedirects = flag.Bool("follow-redirects", true, "follow HTTP redirects from the target URL")
 )
 
 var appConfig Config
@@ -64,7 +66,10 @@ func loadConfig() {
 		if *flagRateLimit > 0 {
 			appConfig.RateLimit = *flagRateLimit
 		} else if rateLimitStr != "" {
-			appConfig.RateLimit, _ = strconv.Atoi(rateLimitStr)
+			val, err := strconv.Atoi(rateLimitStr)
+			if err == nil {
+				appConfig.RateLimit = val
+			}
 		}
 
 		appConfig.Port = os.Getenv("PORT")
@@ -93,6 +98,13 @@ func loadConfig() {
 		appConfig.DefaultOrigin = *flagDefaultOrigin
 		if origin := os.Getenv("DEFAULT_ORIGIN"); origin != "" {
 			appConfig.DefaultOrigin = origin
+		}
+
+		appConfig.FollowRedirects = *flagFollowRedirects
+		if os.Getenv("FOLLOW_REDIRECTS") == "false" {
+			appConfig.FollowRedirects = false
+		} else if os.Getenv("FOLLOW_REDIRECTS") == "true" {
+			appConfig.FollowRedirects = true
 		}
 
 		if appConfig.RateLimit > 0 {
@@ -157,7 +169,7 @@ func main() {
 	log.Printf("Server running on http://localhost:%s", appConfig.Port)
 	log.Printf("Proxy endpoint: http://localhost:%s/proxy?url=TARGET_URL", appConfig.Port)
 	if appConfig.AuthKey != "" {
-		log.Printf("Authentication required: add &key=%s to requests", appConfig.AuthKey)
+		log.Printf("Authentication required: pass token in X-KochoCORS-Auth-Token header")
 	}
 
 	if err := http.ListenAndServe(":"+appConfig.Port, nil); err != nil {
@@ -168,9 +180,9 @@ func main() {
 // handleProxyRequest is main logical loop
 func handleProxyRequest(w http.ResponseWriter, r *http.Request) {
 	if appConfig.AuthKey != "" {
-		providedKey := r.URL.Query().Get("key")
+		providedKey := r.Header.Get("X-KochoCORS-Auth-Token")
 		if providedKey != appConfig.AuthKey {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Error(w, "Unauthorized - Invalid or missing X-KochoCORS-Auth-Token header", http.StatusUnauthorized)
 			return
 		}
 	}
@@ -241,11 +253,16 @@ func handleProxyRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+	client := &http.Client{}
+
+	if !appConfig.FollowRedirects {
+		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			// If we don't want to follow redirects, return the last response,
+			// which includes the redirect status code and Location header.
 			return http.ErrUseLastResponse
-		},
+		}
 	}
+
 	if parsedURL.Scheme == "https" || appConfig.InsecureTLS {
 		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -261,11 +278,11 @@ func handleProxyRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// Redirect response
-	if resp.StatusCode >= 300 && resp.StatusCode < 400 {
-		http.Error(w, "Redirect detected: "+resp.Status, http.StatusBadRequest)
-		return
-	}
+	// Redirect response handling is now managed by the client's CheckRedirect policy
+	// if resp.StatusCode >= 300 && resp.StatusCode < 400 {
+	// 	http.Error(w, "Redirect detected: "+resp.Status, http.StatusBadRequest)
+	// 	return
+	// }
 
 	// Copy response headers and body to the client
 	for name, values := range resp.Header {

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: kocho-cors
+    runtime: go # Specify Go runtime
+    buildCommand: go build -o proxy . # Build a Linux-compatible binary named 'proxy'
+    startCommand: ./proxy             # Start the binary
+    plan: free 
+    healthCheckPath: /ping 
+    envVars:
+      - key: PORT
+        value: "10000" 
+      # Add other necessary environment variables from your .env or flags:
+      # - key: AUTH_KEY
+      #   generateValue: true # Example for a Render-generated secret
+      # - key: ALLOWED_DOMAINS
+      #   value: "example.com,api.example.com"
+      # - key: RATE_LIMIT
+      #   value: "60"
+      # - key: DEFAULT_ORIGIN
+      #   value: "https://yourfrontend.com"
+      # - key: DEBUG
+      #   value: "false"
+      # - key: INSECURE_TLS
+      #   value: "false"
