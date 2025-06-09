@@ -98,7 +98,6 @@ For comprehensive documentation including:
 - IP Forwarding: Does NOT preserve original client IP
 - Redirect Following: Does NOT automatically follow redirects
 
----
 ## **License**
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
