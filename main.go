@@ -278,12 +278,6 @@ func handleProxyRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// Redirect response handling is now managed by the client's CheckRedirect policy
-	// if resp.StatusCode >= 300 && resp.StatusCode < 400 {
-	// 	http.Error(w, "Redirect detected: "+resp.Status, http.StatusBadRequest)
-	// 	return
-	// }
-
 	// Copy response headers and body to the client
 	for name, values := range resp.Header {
 		for _, value := range values {
